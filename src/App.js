@@ -116,6 +116,37 @@ function App() {
       <br /><br />
       <button onClick={uploadFile} disabled={!file}>Upload</button>
 
+ {/* PREVIEW */}
+      {preview.length > 0 && (
+        <>
+          <h3 style={{ marginTop: 30 }}>Live Preview</h3>
+
+          <div style={{ overflowX: "auto" }}>
+            <table border="1" cellPadding="5" style={{ borderCollapse: "collapse" }}>
+              <thead>
+                <tr>
+                  {selectedCols.map(col => (
+                    <th key={col}>{renameMap[col] || col}</th>
+                  ))}
+                </tr>
+              </thead>
+
+              <tbody>
+                {preview.slice(0, 3).map((row, i) => (
+                  <tr key={i}>
+                    {selectedCols.map(col => (
+                      <td key={col}>{row[col]}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+
+
       {/* SAVE / LOAD */}
       {columns.length > 0 && (
         <>
@@ -186,35 +217,7 @@ function App() {
         </>
       )}
 
-      {/* PREVIEW */}
-      {preview.length > 0 && (
-        <>
-          <h3 style={{ marginTop: 30 }}>Live Preview</h3>
-
-          <div style={{ overflowX: "auto" }}>
-            <table border="1" cellPadding="5" style={{ borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  {selectedCols.map(col => (
-                    <th key={col}>{renameMap[col] || col}</th>
-                  ))}
-                </tr>
-              </thead>
-
-              <tbody>
-                {preview.map((row, i) => (
-                  <tr key={i}>
-                    {selectedCols.map(col => (
-                      <td key={col}>{row[col]}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
-
+     
       {/* DOWNLOAD */}
       {columns.length > 0 && (
         <button onClick={processFile} style={{ marginTop: 20 }}>
