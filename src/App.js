@@ -3,29 +3,12 @@ import axios from "axios";
 
 const API_BASE = "https://csv-cleaner-backend.onrender.com";
 
-// 🔥 PRESETS
-const PRESETS = {
-  finance: {
-    name: "Finance Report",
-    columns: ["Orderid", "Price", "Billingcountry"],
-    rename: {
-      Orderid: "Invoice ID"
-    }
-  },
-  marketing: {
-    name: "Marketing Report",
-    columns: ["Product", "Category", "Price"],
-    rename: {}
-  }
-};
-
 function App() {
   const [file, setFile] = useState(null);
   const [columns, setColumns] = useState([]);
   const [selectedCols, setSelectedCols] = useState([]);
   const [preview, setPreview] = useState([]);
   const [renameMap, setRenameMap] = useState({});
-  const [selectedPreset, setSelectedPreset] = useState("");
 
   // 🚀 Upload
   const uploadFile = async () => {
@@ -38,7 +21,6 @@ function App() {
     setSelectedCols(res.data.columns);
     setPreview(res.data.preview || []);
     setRenameMap({});
-    setSelectedPreset("");
   };
 
   // 🔁 Toggle column
@@ -69,13 +51,30 @@ function App() {
     setSelectedCols(newCols);
   };
 
-  // 🎯 Apply preset
-  const applyPreset = (key) => {
-    const preset = PRESETS[key];
-    if (!preset) return;
+  // 💾 Save Config
+  const saveConfig = () => {
+    const config = {
+      selectedCols,
+      renameMap
+    };
 
-    setSelectedCols(preset.columns);
-    setRenameMap(preset.rename || {});
+    localStorage.setItem("csvConfig", JSON.stringify(config));
+    alert("Configuration saved!");
+  };
+
+  // 📂 Load Config
+  const loadConfig = () => {
+    const saved = localStorage.getItem("csvConfig");
+
+    if (!saved) {
+      alert("No saved configuration found");
+      return;
+    }
+
+    const config = JSON.parse(saved);
+
+    setSelectedCols(config.selectedCols || []);
+    setRenameMap(config.renameMap || {});
   };
 
   // 📥 Process & download
@@ -117,25 +116,14 @@ function App() {
       <br /><br />
       <button onClick={uploadFile} disabled={!file}>Upload</button>
 
-      {/* PRESETS */}
+      {/* SAVE / LOAD */}
       {columns.length > 0 && (
         <>
-          <h3 style={{ marginTop: 20 }}>Load Preset</h3>
-          <select
-            value={selectedPreset}
-            onChange={(e) => {
-              const val = e.target.value;
-              setSelectedPreset(val);
-              applyPreset(val);
-            }}
-          >
-            <option value="">None</option>
-            {Object.entries(PRESETS).map(([key, p]) => (
-              <option key={key} value={key}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+          <h3 style={{ marginTop: 20 }}>Configuration</h3>
+          <button onClick={saveConfig}>Save Configuration</button>
+          <button onClick={loadConfig} style={{ marginLeft: 10 }}>
+            Load Last Configuration
+          </button>
         </>
       )}
 
