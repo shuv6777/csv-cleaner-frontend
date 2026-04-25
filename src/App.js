@@ -28,16 +28,13 @@ function App() {
 
     formData.append("config", JSON.stringify(config));
 
-    const res = await axios.post(`${API_BASE}/process`, formData);
+    const byteNumbers = new Array(res.data.file.length)
+  .fill(0)
+  .map((_, i) => res.data.file.charCodeAt(i));
 
-    const byteCharacters = atob(res.data.file);
-    const byteNumbers = new Array(byteCharacters.length)
-      .fill(0)
-      .map((_, i) => byteCharacters.charCodeAt(i));
-
-    const blob = new Blob([new Uint8Array(byteNumbers)], {
-      type: res.data.mime
-    });
+const blob = new Blob([new Uint8Array(byteNumbers)], {
+  type: res.data.mime
+});
 
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
