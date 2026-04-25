@@ -3,14 +3,31 @@ import axios from "axios";
 
 const API_BASE = "https://csv-cleaner-backend.onrender.com";
 
+// 🔥 PRESETS
+const PRESETS = {
+  finance: {
+    name: "Finance Report",
+    columns: ["Orderid", "Price", "Billingcountry"],
+    rename: {
+      Orderid: "Invoice ID"
+    }
+  },
+  marketing: {
+    name: "Marketing Report",
+    columns: ["Product", "Category", "Price"],
+    rename: {}
+  }
+};
+
 function App() {
   const [file, setFile] = useState(null);
   const [columns, setColumns] = useState([]);
   const [selectedCols, setSelectedCols] = useState([]);
   const [preview, setPreview] = useState([]);
   const [renameMap, setRenameMap] = useState({});
+  const [selectedPreset, setSelectedPreset] = useState("");
 
-  // Upload
+  // 🚀 Upload
   const uploadFile = async () => {
     const formData = new FormData();
     formData.append("file", file);
@@ -20,9 +37,11 @@ function App() {
     setColumns(res.data.columns);
     setSelectedCols(res.data.columns);
     setPreview(res.data.preview || []);
+    setRenameMap({});
+    setSelectedPreset("");
   };
 
-  // Toggle column
+  // 🔁 Toggle column
   const toggleColumn = (col) => {
     if (selectedCols.includes(col)) {
       setSelectedCols(selectedCols.filter(c => c !== col));
@@ -31,7 +50,7 @@ function App() {
     }
   };
 
-  // Rename
+  // ✏️ Rename
   const handleRename = (col, newName) => {
     setRenameMap({
       ...renameMap,
@@ -39,7 +58,7 @@ function App() {
     });
   };
 
-  // Reorder (move up/down)
+  // 🔀 Reorder
   const moveColumn = (index, direction) => {
     const newCols = [...selectedCols];
     const swapIndex = index + direction;
@@ -50,7 +69,16 @@ function App() {
     setSelectedCols(newCols);
   };
 
-  // Process & Download
+  // 🎯 Apply preset
+  const applyPreset = (key) => {
+    const preset = PRESETS[key];
+    if (!preset) return;
+
+    setSelectedCols(preset.columns);
+    setRenameMap(preset.rename || {});
+  };
+
+  // 📥 Process & download
   const processFile = async () => {
     const formData = new FormData();
     formData.append("file", file);
@@ -89,15 +117,36 @@ function App() {
       <br /><br />
       <button onClick={uploadFile} disabled={!file}>Upload</button>
 
+      {/* PRESETS */}
+      {columns.length > 0 && (
+        <>
+          <h3 style={{ marginTop: 20 }}>Load Preset</h3>
+          <select
+            value={selectedPreset}
+            onChange={(e) => {
+              const val = e.target.value;
+              setSelectedPreset(val);
+              applyPreset(val);
+            }}
+          >
+            <option value="">None</option>
+            {Object.entries(PRESETS).map(([key, p]) => (
+              <option key={key} value={key}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </>
+      )}
+
       {/* ACTIONS */}
       {columns.length > 0 && (
         <>
           <h3 style={{ marginTop: 30 }}>Column Actions</h3>
 
-          {/* SELECT / DELETE */}
+          {/* SELECT */}
           <details open>
             <summary><b>Select / Delete Columns</b></summary>
-
             <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: 10 }}>
               {columns.map(col => (
                 <label key={col} style={{
@@ -119,7 +168,6 @@ function App() {
           {/* RENAME */}
           <details>
             <summary><b>Rename Columns</b></summary>
-
             {selectedCols.map(col => (
               <div key={col} style={{ marginTop: 10 }}>
                 {col} →
@@ -135,7 +183,6 @@ function App() {
           {/* REORDER */}
           <details>
             <summary><b>Reorder Columns</b></summary>
-
             {selectedCols.map((col, index) => (
               <div key={col} style={{ marginTop: 5 }}>
                 {col}
@@ -151,7 +198,7 @@ function App() {
         </>
       )}
 
-      {/* LIVE PREVIEW */}
+      {/* PREVIEW */}
       {preview.length > 0 && (
         <>
           <h3 style={{ marginTop: 30 }}>Live Preview</h3>
@@ -180,7 +227,7 @@ function App() {
         </>
       )}
 
-      {/* PROCESS */}
+      {/* DOWNLOAD */}
       {columns.length > 0 && (
         <button onClick={processFile} style={{ marginTop: 20 }}>
           Process & Download
