@@ -10,7 +10,7 @@ function App() {
   const [preview, setPreview] = useState([]);
   const [renameMap, setRenameMap] = useState({});
 
-  // 🚀 Upload
+  // Upload
   const uploadFile = async () => {
     const formData = new FormData();
     formData.append("file", file);
@@ -23,7 +23,7 @@ function App() {
     setRenameMap({});
   };
 
-  // 🔁 Toggle column
+  // Toggle column
   const toggleColumn = (col) => {
     if (selectedCols.includes(col)) {
       setSelectedCols(selectedCols.filter(c => c !== col));
@@ -32,7 +32,7 @@ function App() {
     }
   };
 
-  // ✏️ Rename
+  // Rename
   const handleRename = (col, newName) => {
     setRenameMap({
       ...renameMap,
@@ -40,7 +40,7 @@ function App() {
     });
   };
 
-  // 🔀 Reorder
+  // Reorder
   const moveColumn = (index, direction) => {
     const newCols = [...selectedCols];
     const swapIndex = index + direction;
@@ -51,18 +51,17 @@ function App() {
     setSelectedCols(newCols);
   };
 
-  // 💾 Save Config
+  // Save config
   const saveConfig = () => {
     const config = {
       selectedCols,
       renameMap
     };
-
     localStorage.setItem("csvConfig", JSON.stringify(config));
     alert("Configuration saved!");
   };
 
-  // 📂 Load Config
+  // Load config
   const loadConfig = () => {
     const saved = localStorage.getItem("csvConfig");
 
@@ -72,12 +71,11 @@ function App() {
     }
 
     const config = JSON.parse(saved);
-
     setSelectedCols(config.selectedCols || []);
     setRenameMap(config.renameMap || {});
   };
 
-  // 📥 Process & download
+  // Process & Download
   const processFile = async () => {
     const formData = new FormData();
     formData.append("file", file);
@@ -108,118 +106,114 @@ function App() {
   };
 
   return (
-    <div style={{ padding: 30, fontFamily: "Arial" }}>
+    <div style={{ padding: 20, fontFamily: "Arial" }}>
       <h2>CSV & Excel Cleaner</h2>
 
       {/* Upload */}
       <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-      <br /><br />
-      <button onClick={uploadFile} disabled={!file}>Upload</button>
+      <button onClick={uploadFile} disabled={!file} style={{ marginLeft: 10 }}>
+        Upload
+      </button>
 
-      {/* SAVE / LOAD */}
       {columns.length > 0 && (
-        <>
-          <h3 style={{ marginTop: 20 }}>Configuration</h3>
-          <button onClick={saveConfig}>Save Configuration</button>
-          <button onClick={loadConfig} style={{ marginLeft: 10 }}>
-            Load Last Configuration
-          </button>
-        </>
-      )}
+        <div style={{ display: "flex", marginTop: 20, gap: "20px" }}>
 
-      {/* ACTIONS */}
-      {columns.length > 0 && (
-        <>
-          <h3 style={{ marginTop: 30 }}>Column Actions</h3>
+          {/* LEFT PANEL */}
+          <div style={{ width: "35%", maxHeight: "80vh", overflowY: "auto" }}>
 
-          {/* SELECT */}
-          <details open>
-            <summary><b>Select / Delete Columns</b></summary>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: 10 }}>
+            <h3>Configuration</h3>
+            <button onClick={saveConfig}>Save</button>
+            <button onClick={loadConfig} style={{ marginLeft: 10 }}>
+              Load
+            </button>
+
+            {/* SELECT */}
+            <details open style={{ marginTop: 20 }}>
+              <summary><b>Select / Delete Columns</b></summary>
+
               {columns.map(col => (
-                <label key={col} style={{
-                  border: "1px solid #ccc",
-                  padding: "6px 10px",
-                  borderRadius: "6px",
-                  background: selectedCols.includes(col) ? "#d4f8d4" : "#f5f5f5"
-                }}>
+                <div key={col}>
                   <input
                     type="checkbox"
                     checked={selectedCols.includes(col)}
                     onChange={() => toggleColumn(col)}
                   /> {col}
-                </label>
+                </div>
               ))}
-            </div>
-          </details>
+            </details>
 
-          {/* RENAME */}
-          <details>
-            <summary><b>Rename Columns</b></summary>
-            {selectedCols.map(col => (
-              <div key={col} style={{ marginTop: 10 }}>
-                {col} →
-                <input
-                  placeholder="New name"
-                  style={{ marginLeft: 10 }}
-                  onChange={(e) => handleRename(col, e.target.value)}
-                />
-              </div>
-            ))}
-          </details>
+            {/* RENAME */}
+            <details style={{ marginTop: 20 }}>
+              <summary><b>Rename Columns</b></summary>
 
-          {/* REORDER */}
-          <details>
-            <summary><b>Reorder Columns</b></summary>
-            {selectedCols.map((col, index) => (
-              <div key={col} style={{ marginTop: 5 }}>
-                {col}
-                <button onClick={() => moveColumn(index, -1)} style={{ marginLeft: 10 }}>↑</button>
-                <button onClick={() => moveColumn(index, 1)}>↓</button>
-              </div>
-            ))}
-          </details>
+              {selectedCols.map(col => (
+                <div key={col}>
+                  {col} →
+                  <input
+                    style={{ marginLeft: 5 }}
+                    onChange={(e) => handleRename(col, e.target.value)}
+                  />
+                </div>
+              ))}
+            </details>
 
-          <p style={{ marginTop: 10 }}>
-            Selected: {selectedCols.length} / {columns.length}
-          </p>
-        </>
-      )}
+            {/* REORDER */}
+            <details style={{ marginTop: 20 }}>
+              <summary><b>Reorder Columns</b></summary>
 
-      {/* PREVIEW */}
-      {preview.length > 0 && (
-        <>
-          <h3 style={{ marginTop: 30 }}>Live Preview</h3>
+              {selectedCols.map((col, index) => (
+                <div key={col}>
+                  {col}
+                  <button onClick={() => moveColumn(index, -1)}>↑</button>
+                  <button onClick={() => moveColumn(index, 1)}>↓</button>
+                </div>
+              ))}
+            </details>
 
-          <div style={{ overflowX: "auto" }}>
-            <table border="1" cellPadding="5" style={{ borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  {selectedCols.map(col => (
-                    <th key={col}>{renameMap[col] || col}</th>
-                  ))}
-                </tr>
-              </thead>
+            <button onClick={processFile} style={{ marginTop: 20 }}>
+              Download File
+            </button>
 
-              <tbody>
-                {preview.map((row, i) => (
-                  <tr key={i}>
+          </div>
+
+          {/* RIGHT PANEL */}
+          <div style={{
+            width: "65%",
+            position: "sticky",
+            top: 10,
+            alignSelf: "flex-start"
+          }}>
+            <h3>Live Preview</h3>
+
+            <div style={{
+              maxHeight: "70vh",
+              overflow: "auto",
+              border: "1px solid #ccc"
+            }}>
+              <table border="1" cellPadding="5" style={{ borderCollapse: "collapse", width: "100%" }}>
+                <thead>
+                  <tr>
                     {selectedCols.map(col => (
-                      <td key={col}>{row[col]}</td>
+                      <th key={col}>{renameMap[col] || col}</th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
+                </thead>
 
-      {/* DOWNLOAD */}
-      {columns.length > 0 && (
-        <button onClick={processFile} style={{ marginTop: 20 }}>
-          Process & Download
-        </button>
+                <tbody>
+                  {preview.map((row, i) => (
+                    <tr key={i}>
+                      {selectedCols.map(col => (
+                        <td key={col}>{row[col]}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+
+        </div>
       )}
     </div>
   );
