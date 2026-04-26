@@ -319,26 +319,6 @@ function App() {
             </div>
           </details>
 
-          {/* RENAME */}
-          <details style={{ marginTop: 15 }}>
-            <summary>
-              <b>Rename Columns</b>
-            </summary>
-
-            {selectedCols.map((col) => (
-              <div key={col} style={{ marginTop: 10 }}>
-                {col} →
-                <input
-                  placeholder="New name"
-                  style={{ marginLeft: 10 }}
-                  onChange={(e) =>
-                    handleRename(col, e.target.value)
-                  }
-                />
-              </div>
-            ))}
-          </details>
-
           {/* REORDER */}
           <details style={{ marginTop: 15 }}>
             <summary>
@@ -361,6 +341,28 @@ function App() {
               </div>
             ))}
           </details>
+
+          {/* RENAME */}
+          <details style={{ marginTop: 15 }}>
+            <summary>
+              <b>Rename Columns</b>
+            </summary>
+
+            {selectedCols.map((col) => (
+              <div key={col} style={{ marginTop: 10 }}>
+                {col} →
+                <input
+                  placeholder="New name"
+                  style={{ marginLeft: 10 }}
+                  onChange={(e) =>
+                    handleRename(col, e.target.value)
+                  }
+                />
+              </div>
+            ))}
+          </details>
+
+          
 
           <p style={{ marginTop: 15 }}>
             Selected: {selectedCols.length} / {columns.length}
