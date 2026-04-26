@@ -10,16 +10,18 @@ function App() {
   const [preview, setPreview] = useState([]);
   const [renameMap, setRenameMap] = useState({});
   const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
 
   // 🚀 Upload
   const uploadFile = async () => {
     if (!file) {
-      alert("Please select a file first.");
+      setStatusMessage("Please select a file first.");
       return;
     }
 
     try {
       setLoading(true);
+      setStatusMessage("Processing... Excel doesn’t need to suffer today.");
 
       const formData = new FormData();
       formData.append("file", file);
@@ -31,10 +33,10 @@ function App() {
       setPreview(res.data.preview || []);
       setRenameMap({});
 
-      alert("File uploaded successfully!");
+      setStatusMessage("File uploaded successfully!");
     } catch (err) {
       console.error(err);
-      alert("Upload failed. Please try again.");
+      setStatusMessage("Upload failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -80,7 +82,7 @@ function App() {
     };
 
     localStorage.setItem("csvConfig", JSON.stringify(config));
-    alert("Configuration saved for future laziness.");
+    setStatusMessage("Configuration saved for future laziness.");
   };
 
   // 📂 Load Config
@@ -88,7 +90,7 @@ function App() {
     const saved = localStorage.getItem("csvConfig");
 
     if (!saved) {
-      alert("No saved configuration found.");
+      setStatusMessage("No saved configuration found.");
       return;
     }
 
@@ -97,17 +99,20 @@ function App() {
     setSelectedCols(config.selectedCols || []);
     setRenameMap(config.renameMap || {});
 
-    alert("Last configuration loaded successfully!");
+    setStatusMessage("Last configuration loaded successfully!");
   };
 
   // 📥 Process & Download
   const processFile = async () => {
     if (!file) {
-      alert("Please upload a file first.");
+      setStatusMessage("Please upload a file first.");
       return;
     }
 
     try {
+      setLoading(true);
+      setStatusMessage("Preparing your clean sheet...");
+
       const formData = new FormData();
       formData.append("file", file);
 
@@ -120,9 +125,12 @@ function App() {
 
       const res = await axios.post(`${API_BASE}/process`, formData);
 
-      const byteNumbers = new Array(res.data.file.length)
-        .fill(0)
-        .map((_, i) => res.data.file.charCodeAt(i));
+      const byteCharacters = atob(res.data.file);
+      const byteNumbers = new Array(byteCharacters.length);
+
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
 
       const blob = new Blob([new Uint8Array(byteNumbers)], {
         type: res.data.mime,
@@ -134,14 +142,18 @@ function App() {
       link.setAttribute("download", res.data.filename);
       document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
 
-      alert("Download started successfully!");
+      setStatusMessage("Download ready! Your clean file is on its way.");
     } catch (err) {
       console.error(err);
-      alert("Download failed. Please try again.");
+      setStatusMessage("Download failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
+  // 🎨 Styles
   const cardStyle = {
     border: "1px solid #ddd",
     borderRadius: "10px",
@@ -204,9 +216,15 @@ function App() {
           accurate detection.
         </p>
 
-        {loading && (
-          <p style={{ color: "blue", fontWeight: "bold" }}>
-            Processing... Excel doesn’t need to suffer today.
+        {statusMessage && (
+          <p
+            style={{
+              marginTop: 10,
+              fontWeight: "bold",
+              color: loading ? "blue" : "green",
+            }}
+          >
+            {statusMessage}
           </p>
         )}
       </div>
@@ -345,7 +363,7 @@ function App() {
           {/* RENAME */}
           <details style={{ marginTop: 15 }}>
             <summary>
-              <b>Rename Columns</b>
+              <b>Final Column Naming</b>
             </summary>
 
             {selectedCols.map((col) => (
@@ -361,8 +379,6 @@ function App() {
               </div>
             ))}
           </details>
-
-          
 
           <p style={{ marginTop: 15 }}>
             Selected: {selectedCols.length} / {columns.length}
