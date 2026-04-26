@@ -10,7 +10,10 @@ function App() {
   const [preview, setPreview] = useState([]);
   const [renameMap, setRenameMap] = useState({});
   const [loading, setLoading] = useState(false);
+
+  // 📢 Separate messages
   const [statusMessage, setStatusMessage] = useState("");
+  const [configMessage, setConfigMessage] = useState("");
 
   // 🚀 Upload
   const uploadFile = async () => {
@@ -21,6 +24,7 @@ function App() {
 
     try {
       setLoading(true);
+      setConfigMessage("");
       setStatusMessage("Processing... Excel doesn’t need to suffer today.");
 
       const formData = new FormData();
@@ -82,7 +86,9 @@ function App() {
     };
 
     localStorage.setItem("csvConfig", JSON.stringify(config));
-    setStatusMessage("Configuration saved for future laziness.");
+
+    setStatusMessage("");
+    setConfigMessage("Configuration saved for future laziness.");
   };
 
   // 📂 Load Config
@@ -90,7 +96,7 @@ function App() {
     const saved = localStorage.getItem("csvConfig");
 
     if (!saved) {
-      setStatusMessage("No saved configuration found.");
+      setConfigMessage("No saved configuration found.");
       return;
     }
 
@@ -99,7 +105,8 @@ function App() {
     setSelectedCols(config.selectedCols || []);
     setRenameMap(config.renameMap || {});
 
-    setStatusMessage("Last configuration loaded successfully!");
+    setStatusMessage("");
+    setConfigMessage("Last configuration loaded successfully!");
   };
 
   // 📥 Process & Download
@@ -111,6 +118,7 @@ function App() {
 
     try {
       setLoading(true);
+      setConfigMessage("");
       setStatusMessage("Preparing your clean sheet...");
 
       const formData = new FormData();
@@ -292,6 +300,18 @@ function App() {
           >
             Load Last Setup
           </button>
+
+          {configMessage && (
+            <p
+              style={{
+                marginTop: 15,
+                fontWeight: "bold",
+                color: "green",
+              }}
+            >
+              {configMessage}
+            </p>
+          )}
         </div>
       )}
 
@@ -371,6 +391,7 @@ function App() {
                 {col} →
                 <input
                   placeholder="New name"
+                  value={renameMap[col] || ""}
                   style={{ marginLeft: 10 }}
                   onChange={(e) =>
                     handleRename(col, e.target.value)
@@ -391,6 +412,7 @@ function App() {
         <div style={cardStyle}>
           <button
             onClick={processFile}
+            disabled={loading}
             style={{
               ...primaryButton,
               background: "#333",
